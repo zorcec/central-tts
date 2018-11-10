@@ -136,11 +136,13 @@ public class Service {
     }
 
     private String enhanceText(String text, String [] effects) {
-        if (Arrays.asList(effects).contains("whispered")) {
-            text = applyWhispered(text);
-        }
-        if (Arrays.asList(effects).contains("auto-breaths")) {
-            text = applyAutoBreaths(text);
+        if (effects != null) {
+            if (Arrays.asList(effects).contains("whispered")) {
+                text = applyWhispered(text);
+            }
+            if (Arrays.asList(effects).contains("auto-breaths")) {
+                text = applyAutoBreaths(text);
+            }
         }
         return String.format("<speak>%s</speak>", text);
     }
