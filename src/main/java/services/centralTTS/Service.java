@@ -6,6 +6,7 @@ import java.io.InputStream;
 import javax.servlet.ServletOutputStream;
 import org.apache.commons.io.FileUtils;
 import com.amazonaws.services.polly.model.Voice;
+import javazoom.jl.converter.Converter;
 
 import main.java.helpers.configurations.*;
 import main.java.helpers.logging.*;
@@ -39,9 +40,10 @@ public class Service {
                 }
 
                 // send audio
-                res.type("audio/mp3");
+                res.type("audio/wav");
                 ServletOutputStream out = res.raw().getOutputStream();
                 InputStream audio = this.getAudio(text, effects);
+
                 int data = audio.read();
                 while (data >= 0) {
                     out.write((char) data);
@@ -85,12 +87,8 @@ public class Service {
                     this.voiceService.getVoice().getName(),
                     System.currentTimeMillis());
 
-            File file = new File(getFileNamePath(audioName));
-            file.getParentFile().mkdirs();
-            file.createNewFile();
-
-            // write audio to it
-            FileUtils.copyInputStreamToFile(audio, file);
+            // convert audio to wav
+            audio = this.convertMP3toWAV(audio, getFileNamePath(audioName));
 
             // save info about the audio
             VoiceData voiceData = new VoiceData(
@@ -156,7 +154,21 @@ public class Service {
     }
 
     private String getFileNamePath(String name) {
-        return dataPath + "/" + name + ".mp3";
+        return dataPath + "/" + name + ".wav";
+    }
+
+    private InputStream convertMP3toWAV(InputStream audio, String audioPath){
+        try {
+            String tempFile = audioPath + ".temp";
+            File targetFile = new File(audioPath);
+            FileUtils.copyInputStreamToFile(audio, targetFile);
+            Converter converter = new Converter();
+            converter.convert(tempFile, audioPath);
+            return FileUtils.openInputStream(new File(audioPath));
+        } catch (Exception ex) {
+            Logger.exception(ex);
+        }
+        return null;
     }
 
 }
