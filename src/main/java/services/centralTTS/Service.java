@@ -1,5 +1,6 @@
 package main.java.services.centralTTS;
 
+import java.io.FileReader;
 import java.util.Arrays;
 import java.io.File;
 import java.io.InputStream;
@@ -80,15 +81,20 @@ public class Service {
             // NOT FOUND
             // create new mp3 file
             Logger.info(String.format("No match found for: %s", enhancedText));
-            audio = voiceService.synthesize(enhancedText);
-
             String audioName = String.format("%s_%s_%s",
                     VoiceData.VoiceServiceEnum.amazonPolly,
                     this.voiceService.getVoice().getName(),
                     System.currentTimeMillis());
 
+            // Synthesize and save original
+            audio = voiceService.synthesize(enhancedText);
+            File originalFile = new File(this.getTempFileNamePath(audioName));
+            originalFile.getParentFile().mkdirs();
+            originalFile.createNewFile();
+            FileUtils.copyInputStreamToFile(audio, originalFile);
+
             // convert audio to wav
-            audio = this.convertMP3toWAV(audio, getFileNamePath(audioName));
+            audio = this.convertToWAV(audioName);
 
             // save info about the audio
             VoiceData voiceData = new VoiceData(
@@ -157,14 +163,16 @@ public class Service {
         return dataPath + "/" + name + ".wav";
     }
 
-    private InputStream convertMP3toWAV(InputStream audio, String audioPath){
+    private String getTempFileNamePath(String name) {
+        return dataPath + "/" + name + ".original";
+    }
+
+    private InputStream convertToWAV(String audioName){
         try {
-            String tempFile = audioPath + ".temp";
-            File targetFile = new File(audioPath);
-            FileUtils.copyInputStreamToFile(audio, targetFile);
+            String outputFile = this.getFileNamePath(audioName);
             Converter converter = new Converter();
-            converter.convert(tempFile, audioPath);
-            return FileUtils.openInputStream(new File(audioPath));
+            converter.convert(this.getTempFileNamePath(audioName), outputFile);
+            return FileUtils.openInputStream(new File(outputFile));
         } catch (Exception ex) {
             Logger.exception(ex);
         }
