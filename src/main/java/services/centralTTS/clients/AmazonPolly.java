@@ -28,9 +28,15 @@ public class AmazonPolly {
 
     public void createService() {
 
-        AWSCredentials credentials = new BasicAWSCredentials(
-            PropertiesReader.getProperty("secrets", "AWS_ACCESS_KEY_ID", ""),
-            PropertiesReader.getProperty("secrets", "AWS_SECRET_ACCESS_KEY", ""));
+        String id = PropertiesReader.getProperty("secrets", "AWS_ACCESS_KEY_ID", null);
+        String key = PropertiesReader.getProperty("secrets", "AWS_SECRET_ACCESS_KEY", null);
+
+        if (id == null || key == null) {
+            Logger.error("Secrets are not defined!");
+            return;
+        }
+
+        AWSCredentials credentials = new BasicAWSCredentials(id, key);
 
         polly = new AmazonPollyClient(credentials);
 

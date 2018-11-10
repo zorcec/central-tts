@@ -1,3 +1,4 @@
 .gradle
 build
 gradle
+/resources/config/secrets.properties

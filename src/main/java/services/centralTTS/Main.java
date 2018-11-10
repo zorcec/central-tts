@@ -7,7 +7,7 @@ import main.java.helpers.data.fs.*;
 
 public class Main {
 
-    public static void main(String[] args) throws Exception {
+    public static void main(String[] args) {
         try {
             Logger.init();
             PropertiesReader.init();
