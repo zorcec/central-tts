@@ -191,7 +191,7 @@ public class Service {
     private InputStream synthesizeOnDevice(String text) {
         try {
             String tempFileName = this.getFileNamePath("native_synthesis");
-            this.executeBashCommand(String.format("pico2wave -w \"%s\" \"%s\"", tempFileName, text));
+            this.executeBashCommand(String.format("pico2wave -nv -w \"%s\" \"%s\"", tempFileName, text));
             return FileUtils.openInputStream(new File(tempFileName));
         } catch (Exception ex) {
             Logger.exception(ex);
