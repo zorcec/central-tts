@@ -28,29 +28,34 @@ public class AmazonPolly {
 
     public void createService() {
 
-        String id = PropertiesReader.getProperty("secrets", "AWS_ACCESS_KEY_ID", null);
-        String key = PropertiesReader.getProperty("secrets", "AWS_SECRET_ACCESS_KEY", null);
+        try {
 
-        if (id == null || key == null) {
-            Logger.error("Secrets are not defined!");
-            return;
-        }
+            String id = PropertiesReader.getProperty("secrets", "AWS_ACCESS_KEY_ID", null);
+            String key = PropertiesReader.getProperty("secrets", "AWS_SECRET_ACCESS_KEY", null);
 
-        AWSCredentials credentials = new BasicAWSCredentials(id, key);
-
-        polly = new AmazonPollyClient(credentials);
-
-        // Create describe voices request.
-        DescribeVoicesRequest describeVoicesRequest = new DescribeVoicesRequest();
-
-        // Synchronously ask Amazon Polly to describe available TTS voices & select the one we need
-        DescribeVoicesResult describeVoicesResult = polly.describeVoices(describeVoicesRequest);
-        for(Voice voice : describeVoicesResult.getVoices()) {
-            if(voice.getName().equals(PropertiesReader.getProperty("service", "AWS_POLLY_VOICE_ID", "Salli"))) {
-                this.voice = voice;
+            if (id == null || key == null) {
+                Logger.error("Secrets are not defined!");
+                return;
             }
+
+            AWSCredentials credentials = new BasicAWSCredentials(id, key);
+
+            polly = new AmazonPollyClient(credentials);
+
+            // Create describe voices request.
+            DescribeVoicesRequest describeVoicesRequest = new DescribeVoicesRequest();
+
+            // Synchronously ask Amazon Polly to describe available TTS voices & select the one we need
+            DescribeVoicesResult describeVoicesResult = polly.describeVoices(describeVoicesRequest);
+            for (Voice voice : describeVoicesResult.getVoices()) {
+                if (voice.getName().equals(PropertiesReader.getProperty("service", "AWS_POLLY_VOICE_ID", "Salli"))) {
+                    this.voice = voice;
+                }
+            }
+            Logger.info(String.format("Amazon Polly is ready, loaded voice: %s", this.voice.getName()));
+        } catch(Exception ex) {
+            Logger.exception(ex);
         }
-        Logger.info(String.format("Amazon Polly is ready, loaded voice: %s", this.voice.getName()));
     }
 
     public InputStream synthesize(String text) throws IOException {
